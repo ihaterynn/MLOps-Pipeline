@@ -37,22 +37,37 @@
       },
       async uploadImage() {
         if (!this.selectedFile) return;
-  
+
         const formData = new FormData();
         formData.append("file", this.selectedFile);
-  
+
         try {
-          // Use BACKEND_URL instead of hardcoded localhost
-          const response = await fetch(`${BACKEND_URL}/predict_image`, {
-            method: "POST",
-            body: formData
-          });
-          const data = await response.json();
-          this.prediction = data.prediction;
+            console.log("📤 Sending image to:", `${BACKEND_URL}/predict_image`);
+
+            const response = await fetch(`${BACKEND_URL}/predict_image`, {
+                method: "POST",
+                body: formData
+            });
+
+            console.log("✅ Response received:", response);
+
+            // Check if response is JSON
+            const data = await response.json();
+            console.log("🔹 Parsed JSON:", data);
+
+            // Ensure "prediction" key exists
+            if (data.prediction) {
+                this.prediction = data.prediction;
+                console.log("🎯 Prediction:", this.prediction);
+            } else {
+                this.prediction = "Error: No prediction received!";
+                console.warn("⚠️ Warning: No prediction in response.");
+            }
         } catch (error) {
-          console.error("Error uploading image:", error);
+            console.error("❌ Error uploading image:", error);
+            this.prediction = "Error: Server did not respond!";
         }
-      }
+    }
     }
   }
   </script>
