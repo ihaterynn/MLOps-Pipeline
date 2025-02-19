@@ -11,39 +11,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out the repo
-      - name: Check out the repo
+      # 1. Check out the repository
+      - name: Check out repository
         uses: actions/checkout@v3
 
-      # 2. Set up Node for frontend
-      - name: Set up Node
+      # 2. Set up Node.js for the frontend
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # 3. Install & build frontend
+      # 3. Install dependencies and build the frontend
       - name: Build frontend
         run: |
           cd frontend
           npm install
           npm run build
 
-      # 4. Cache Python packages (optional)
+      # 4. Cache Python packages to speed up installs
       - name: Cache pip
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/backend/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # 5. Set up Python for backend
+      # 5. Set up Python for the backend
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # 6. Install Python deps & run tests
+      # 6. Install backend dependencies and run tests
       - name: Install and test backend
         run: |
           cd backend
