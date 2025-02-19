@@ -38,17 +38,21 @@ def dummy_ml_logic(input_data: str) -> str:
 @app.post("/predict")
 def predict(input_data: dict):
     user_input = input_data.get("input_data", "")
+    logger.info(f"Received text for prediction: {user_input}")
     prediction = dummy_ml_logic(user_input)
+    logger.info(f"Returning text-based prediction: {prediction}")
     return {"prediction": prediction}
 
 # ---------- Image-Based Inference ----------
 class_labels = {0: "Nasi Lemak", 1: "Roti Canai"}
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+logger.info(f"Using device: {device}")
 
 # Load the model only if available
 model_path = os.path.join(os.path.dirname(__file__), "resnet18.pth")
 if os.path.exists(model_path):
+    logger.info(f"Found model file at: {model_path}")
     logger.info("Loading model...")
     model = MyResNet18(num_classes=2).to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
@@ -64,24 +68,41 @@ inference_transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
+from fastapi.responses import JSONResponse
+
 @app.post("/predict_image")
 async def predict_image(file: UploadFile = File(...)):
     """
     Accepts an image file upload and returns a predicted class label.
     """
+    logger.info("📥 Received image upload request.")
     if model is None:
-        return {"error": "Model not loaded. Ensure 'resnet18.pth' exists."}
+        logger.warning("⚠️ No model loaded; cannot perform inference.")
+        return JSONResponse(content={"error": "Model not loaded. Ensure 'resnet18.pth' exists."}, status_code=500)
 
-    image = Image.open(file.file).convert("RGB")
-    input_tensor = inference_transform(image).unsqueeze(0).to(device)
+    try:
+        logger.info(f"📁 Uploaded file name: {file.filename}")
 
-    with torch.no_grad():
-        output = model(input_tensor)
-        _, predicted_class = torch.max(output, 1)
+        # Convert and transform the image
+        image = Image.open(file.file).convert("RGB")
+        logger.info("🎨 Image converted to RGB.")
+        input_tensor = inference_transform(image).unsqueeze(0).to(device)
+        logger.info(f"🧩 Input tensor shape: {input_tensor.shape}")
 
-    predicted_label = class_labels.get(int(predicted_class.item()), "Unknown")
+        with torch.no_grad():
+            output = model(input_tensor)
+            logger.info(f"📊 Model output: {output}")
+            _, predicted_class = torch.max(output, 1)
 
-    return {"prediction": predicted_label}
+        predicted_label = class_labels.get(int(predicted_class.item()), "Unknown")
+        logger.info(f"🎯 Predicted class index: {predicted_class.item()}")
+        logger.info(f"🏷️ Predicted label: {predicted_label}")
+
+        return JSONResponse(content={"prediction": predicted_label}, status_code=200)
+
+    except Exception as e:
+        logger.error(f"❌ Error processing image: {str(e)}")
+        return JSONResponse(content={"error": f"Failed to process image: {str(e)}"}, status_code=500)
 
 # ---------- Root Endpoint ----------
 @app.get("/", response_class=HTMLResponse)
