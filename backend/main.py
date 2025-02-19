@@ -18,22 +18,14 @@ app = FastAPI()
 
 # Determine environment (Local vs. Production on Render)
 IS_PRODUCTION = os.getenv("RENDER", "False") == "True"
-FRONTEND_URL = "https://mlops-pipeline.vercel.app" if IS_PRODUCTION else "*"
 
 # Allow frontend requests (CORS)
 app.add_middleware(
     CORSMiddleware,
-    app.add_middleware(
-    CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Local development
-        "https://mlops-pipeline.vercel.app",  # Production frontend
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-,   # Only allow Vercel in production
+        "http://localhost:5173",  # Allow local frontend
+        "https://mlops-pipeline.vercel.app"  # Allow production frontend
+    ] if IS_PRODUCTION else ["*"],  # Allow all in development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
