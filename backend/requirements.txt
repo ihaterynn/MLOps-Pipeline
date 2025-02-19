@@ -6,3 +6,4 @@ pillow
 httpx
 torch
 torchvision
+python-multipart
