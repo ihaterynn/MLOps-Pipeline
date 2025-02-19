@@ -1,0 +1,51 @@
+# Ignore environment configuration
+.env
+
+# Python specific ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.swp
+*.swo
+*.sqlite3
+db.sqlite3
+
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+.vscode/
+
+# GitHub Actions cache
+.pytest_cache/
+
+# Log files
+logs/
+*.log
+
+# Docker files (optional)
+docker-compose.override.yml
+
+# Ignore compiled machine learning models or training files
+*.h5
+*.pkl
+*.pt
+*.pth
+*.onnx
+checkpoints/
+
+# VSCode settings (optional)
+.vscode/
+
+# Frontend build artifacts
+/frontend/dist/
+/frontend/.vercel/
+
+# Ignore GitHub workflow cache
+.github/workflows/*.log
+
+# Ignore Render's local state (if any)
+.render/

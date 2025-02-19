@@ -1,0 +1,30 @@
+name: Deploy Backend Pipeline
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # Log in to Docker Hub (make sure to set these secrets in your repository)
+      - name: Log in to Docker
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      # Build and push the backend Docker image
+      - name: Build and push backend image
+        run: |
+          cd backend
+          docker build -t myorg/my-backend:${{ github.ref_name }} .
+          docker push myorg/my-backend:${{ github.ref_name }}
+
+      # Trigger deployment on Render using a Deploy Hook (set this secret in your repository)
+      - name: Deploy to Render
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

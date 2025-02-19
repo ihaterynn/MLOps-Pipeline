@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repo
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      # 2. Set up Node for frontend
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # 3. Install & build frontend
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # 4. Cache Python packages (optional)
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # 5. Set up Python for backend
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # 6. Install Python deps & run tests
+      - name: Install and test backend
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pytest
