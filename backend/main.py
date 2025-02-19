@@ -1,3 +1,5 @@
+import os
+import logging
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -8,12 +10,20 @@ from PIL import Image
 
 from model import MyResNet18
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
+
+# Determine environment (Local vs. Production on Render)
+IS_PRODUCTION = os.getenv("RENDER", "False") == "True"
+FRONTEND_URL = "https://mlops-pipeline.vercel.app" if IS_PRODUCTION else "*"
 
 # Allow frontend requests (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # For production, restrict to your frontend URL
+    allow_origins=[FRONTEND_URL],   # Only allow Vercel in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,15 +40,21 @@ def predict(input_data: dict):
     return {"prediction": prediction}
 
 # ---------- Image-Based Inference ----------
-
-# Class label mapping
 class_labels = {0: "Nasi Lemak", 1: "Roti Canai"}
 
-# Set up device and load the trained model (ensure num_classes matches training)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = MyResNet18(num_classes=2).to(device)
-model.load_state_dict(torch.load("resnet18.pth", map_location=device))
-model.eval()  # Set model to inference mode
+
+# Load the model only if available
+model_path = "resnet18.pth"
+if os.path.exists(model_path):
+    logger.info("Loading model...")
+    model = MyResNet18(num_classes=2).to(device)
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.eval()  # Set model to inference mode
+    logger.info("Model loaded successfully.")
+else:
+    logger.warning(f"Model file {model_path} not found! Inference won't work.")
+    model = None
 
 # Define transforms used during training
 inference_transform = transforms.Compose([
@@ -51,6 +67,9 @@ async def predict_image(file: UploadFile = File(...)):
     """
     Accepts an image file upload and returns a predicted class label.
     """
+    if model is None:
+        return {"error": "Model not loaded. Ensure 'resnet18.pth' exists."}
+
     image = Image.open(file.file).convert("RGB")
     input_tensor = inference_transform(image).unsqueeze(0).to(device)
 
@@ -75,10 +94,14 @@ def read_root():
                 <li>/predict - for text input inference</li>
                 <li>/predict_image - for image upload inference</li>
             </ul>
-            <p>Go to /docs for interactive API documentation.</p>
+            <p>Go to <a href='/docs'>/docs</a> for interactive API documentation.</p>
         </body>
     </html>
     """
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    # Set different host for local and Render deployment
+    HOST = "0.0.0.0" if IS_PRODUCTION else "127.0.0.1"
+    PORT = int(os.getenv("PORT", 8000))
+
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=not IS_PRODUCTION)
