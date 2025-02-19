@@ -1,14 +1,6 @@
-<template>
-  <div>
-    <p>Hello from Vue.js!</p>
-    <p>Type something to send to the backend:</p>
-    <input v-model="inputValue" />
-    <button @click="sendToBackend">Send</button>
-    <p>{{ responseMessage }}</p>
-  </div>
-</template>
-
 <script>
+import { BACKEND_URL } from '../config.js';
+
 export default {
   name: 'HelloWorld',
   data() {
@@ -20,16 +12,16 @@ export default {
   methods: {
     async sendToBackend() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/predict', {
+        const response = await fetch(`${BACKEND_URL}/predict`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ input_data: this.inputValue })
-        })
-        const data = await response.json()
-        this.responseMessage = data.prediction
+        });
+        const data = await response.json();
+        this.responseMessage = data.prediction;
       } catch (error) {
-        console.error('Error calling backend:', error)
-        this.responseMessage = 'Error calling backend!'
+        console.error('Error calling backend:', error);
+        this.responseMessage = 'Error calling backend!';
       }
     }
   }
