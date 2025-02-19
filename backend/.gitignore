@@ -32,8 +32,6 @@ docker-compose.override.yml
 # Ignore compiled machine learning models or training files
 *.h5
 *.pkl
-*.pt
-*.pth
 *.onnx
 checkpoints/
 
