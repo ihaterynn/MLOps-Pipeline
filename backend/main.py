@@ -45,7 +45,7 @@ class_labels = {0: "Nasi Lemak", 1: "Roti Canai"}
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load the model only if available
-model_path = "resnet18.pth"
+model_path = os.path.join(os.path.dirname(__file__), "resnet18.pth")
 if os.path.exists(model_path):
     logger.info("Loading model...")
     model = MyResNet18(num_classes=2).to(device)
