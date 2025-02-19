@@ -23,7 +23,17 @@ FRONTEND_URL = "https://mlops-pipeline.vercel.app" if IS_PRODUCTION else "*"
 # Allow frontend requests (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL],   # Only allow Vercel in production
+    app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # Local development
+        "https://mlops-pipeline.vercel.app",  # Production frontend
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+,   # Only allow Vercel in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
