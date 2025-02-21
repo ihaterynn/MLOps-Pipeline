@@ -28,7 +28,7 @@
   let intervalId;
   onMounted(() => {
     fetchRandomMessage(); 
-    intervalId = setInterval(fetchRandomMessage, 9000);
+    intervalId = setInterval(fetchRandomMessage, 6000);
   });
   
   onUnmounted(() => {
