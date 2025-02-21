@@ -39,12 +39,12 @@ async function sendToBackend() {
 
   <div class="card">
     <!-- Old code: Counter button -->
-    <button type="button" @click="count++">CLICK ME, Count is {{ count }}</button>
+    <button type="button" @click="count++">CLICK ME, Count is: {{ count }}</button>
   </div>
 
   <!-- New code: Input + button to call the backend -->
   <div style="margin-top: 1rem;">
-    <p>Type something to send to the backend:</p>
+    <p>Type something to call Server to display back:</p>
     <input v-model="inputValue" />
     <button @click="sendToBackend">Send</button>
     <p>{{ responseMessage }}</p>

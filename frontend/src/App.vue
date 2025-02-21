@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>My Simple MLOps Frontend</h1>
+    <h1>The Malaysia Boleh Website</h1>
     <HelloWorld />
     <ImageUpload />
     <Timer />

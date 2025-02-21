@@ -1,6 +1,6 @@
 <template>
     <div class="image-upload">
-      <h2>Upload an Image for Prediction</h2>
+      <h2>Upload a Nasi Lemak or Roti Canai Image for Prediction</h2>
       <input type="file" @change="onFileChange" accept="image/*" />
       <button @click="uploadImage" :disabled="!selectedFile">Predict</button>
   
