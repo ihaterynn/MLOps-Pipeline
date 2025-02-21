@@ -10,7 +10,7 @@
 <script>
 import HelloWorld from './components/HelloWorld.vue'
 import ImageUpload from './components/ImageUpload.vue'
-import Timer from './components/Timer.vue'
+import Timer from './components/Message.vue'
 
 export default {
   name: 'App',

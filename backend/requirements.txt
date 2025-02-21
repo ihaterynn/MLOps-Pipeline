@@ -7,3 +7,4 @@ httpx
 torch
 torchvision
 python-multipart
+apscheduler

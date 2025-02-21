@@ -7,10 +7,10 @@ import uvicorn
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
+from apscheduler.schedulers.background import BackgroundScheduler  # APScheduler
 
-from apscheduler.schedulers.background import BackgroundScheduler  # NEW: APScheduler
 from model import MyResNet18
-from message_provider import get_random_message  # NEW: Import message provider
+from message_provider import get_random_message  # Import message provider
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -24,10 +24,7 @@ IS_PRODUCTION = os.getenv("RENDER", "False") == "True"
 # Allow frontend requests (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Local frontend
-        "https://mlops-pipeline.vercel.app"  # Production frontend
-    ] if IS_PRODUCTION else ["*"],  # Allow all in development
+    allow_origins=["http://localhost:5173", "https://mlops-pipeline.vercel.app"] if IS_PRODUCTION else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,9 +69,7 @@ inference_transform = transforms.Compose([
 
 @app.post("/predict_image")
 async def predict_image(file: UploadFile = File(...)):
-    """
-    Accepts an image file upload and returns a predicted class label.
-    """
+    """Accepts an image file upload and returns a predicted class label."""
     logger.info("📥 Received image upload request.")
     if model is None:
         logger.warning("⚠️ No model loaded; cannot perform inference.")
@@ -82,8 +77,6 @@ async def predict_image(file: UploadFile = File(...)):
 
     try:
         logger.info(f"📁 Uploaded file name: {file.filename}")
-
-        # Convert and transform the image
         image = Image.open(file.file).convert("RGB")
         logger.info("🎨 Image converted to RGB.")
         input_tensor = inference_transform(image).unsqueeze(0).to(device)
@@ -108,19 +101,20 @@ async def predict_image(file: UploadFile = File(...)):
 current_message = get_random_message()  # Fetch initial message from message_provider
 
 def update_random_message():
-    """Update the global random message every 24 hours."""
+    """Update the global random message every 6 seconds."""
     global current_message
     current_message = get_random_message()
     logger.info(f"Updated random message: {current_message}")
 
 # Start APScheduler
 scheduler = BackgroundScheduler()
-scheduler.add_job(update_random_message, 'interval', hours=24)
+scheduler.add_job(update_random_message, 'interval', seconds=6)  # ✅ Change to 6 seconds
 scheduler.start()
-logger.info("✅ APScheduler started: Updating random message every 24 hours.")
+logger.info("✅ APScheduler started: Updating random message every 6 seconds.")
 
 @app.post("/random_message")
 async def random_message():
+    """Returns the latest random message updated by APScheduler."""
     logger.info(f"Returning random message: {current_message}")
     return JSONResponse(content={"message": current_message}, status_code=200)
 
@@ -147,5 +141,4 @@ if __name__ == "__main__":
     # Set different host for local and Render deployment
     HOST = "0.0.0.0" if IS_PRODUCTION else "127.0.0.1"
     PORT = int(os.getenv("PORT", 8000))
-
     uvicorn.run("main:app", host=HOST, port=PORT, reload=not IS_PRODUCTION)
