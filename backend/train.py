@@ -23,12 +23,12 @@ def train_model(
         transforms.ToTensor()
     ])
 
-    # Load the dataset from the processed folder (which should contain only nasi_lemak and roti_canai folders)
+    # Load the dataset from the processed folder
     train_dataset = datasets.ImageFolder(root=data_dir, transform=transform)
 
     # DEBUG: Print class names and their assigned label indices
-    print("Classes in dataset:", train_dataset.classes)  # Expecting ['nasi_lemak', 'roti_canai']
-    print("Class indices:", train_dataset.class_to_idx)  # Should print {'nasi_lemak': 0, 'roti_canai': 1}
+    print("Classes in dataset:", train_dataset.classes)  # ['nasi_lemak', 'roti_canai']
+    print("Class indices:", train_dataset.class_to_idx)  # {'nasi_lemak': 0, 'roti_canai': 1}
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     # Initialize the model with 2 output classes

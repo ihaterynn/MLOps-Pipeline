@@ -8,11 +8,6 @@ class MyResNet18(nn.Module):
         # Load a pretrained ResNet18
         self.resnet = models.resnet18(pretrained=True)
         
-        # (Optional) Freeze pretrained layers if you only want to train the final layer
-        # for param in self.resnet.parameters():
-        #     param.requires_grad = False
-
-        # Replace the final FC layer to match num_classes
         in_features = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(in_features, num_classes)
 

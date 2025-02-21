@@ -3,11 +3,10 @@ import os
 import shutil
 import pytest
 
-# Add the parent directory (backend) to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from fastapi.testclient import TestClient
-from main import app  # Now, we can import main.py correctly
+from main import app  
 
 client = TestClient(app)
 
